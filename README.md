@@ -114,47 +114,6 @@ For HPE Cray XD220v, HPE Cray XD225V and HPE Cray XD295 supported targets are:
 - PDBPIC 
 
 
-
-For HPE Cray XD XD665 supported targets are:
-
-- BMC
-
-- BIOS
-
-- RT_NVME
-
-- RT_OTHER
-
-- RT_SA
-
-- PDB
-
-- MainCPLD
-
-- HDDCtrlr
-
-- UBM6
-
-
-For HPE Cray XD670 supported targets are:
-
-- BMC 
-
-- BMC Image2
-	
-- BIOS
-
-- BIOS2
-
-- MB_CPLD1
-
-- SCM_CPLD1
-
-- BPB_CPLD1
-	
-- BPB_CPLD2
-
-
 # Firmware Upgrade
 
 
@@ -171,10 +130,6 @@ The playbook `system_firmware_update.yml` is used to perform the firmware upgrad
    - update_image_path_xd225v :  Path to local hpm file for HPE Cray XD225v
    
    - update_image_path_xd295v : Path to local hpm file for HPE Cray XD295v
-
-   - update_image_path_xd665 : Path to local hpm file for HPE Cray XD665
-
-   - update_image_path_xd670 : Path to local hpm file for HPE Cray XD670
 
 
 3. Run the ansible playbook:
@@ -194,18 +149,6 @@ The playbook `get_system_firmware_inventory.yml` is used to fetch the firmware i
 2. Run the ansible playbook:
 
    `ansible-playbook -i inventory get_system_firmware_inventory.yml  -e @system_credentials..yml`
-
-
-
-# Get Power State of the Cray XD670 nodes
-
-The playbook `power_state_XD670.yml` is used to fetch the power state, power on, power off the Cray XD670 nodes.
-
-1. Update the following details in inputs.yml and inventory file, config file for required power_state accordingly
-
-2. Run the ansible playbook:
-
-   `ansible-playbook -i inventory  power_state_XD670.yml -e @system_credentials..yml`
 
 
 # Ansible-vault
