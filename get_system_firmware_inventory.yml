@@ -1,0 +1,29 @@
+---
+- hosts: xds
+  connection: local
+  name: version 1.1 Fetches the AFUT supported Cray XD servers System Firmware Inventory Details along with Model name
+  gather_facts: yes
+  vars:
+    bmc_username: "{{ inputs[inventory_hostname].user }}"
+    bmc_password: "{{ inputs[inventory_hostname].password }}"
+    baseuri: "{{ ansible_ssh_host }}"
+    datatype: FirmwareInventory
+
+  tasks:
+  - name: All System Firmware Inventory Details will be stored in the below csv file
+    set_fact:
+      output_file: "All_System_FW_Inventory_{{ ansible_date_time.date }}_{{ ansible_date_time.time }}.csv"
+    run_once: True
+
+  - name: Fetching System Firmware Inventory Details
+    get_system_fw_inv:
+      category: GetInventory
+      command: GetSystemFWInventory
+      baseuri: "{{ baseuri }}"
+      username: "{{ bmc_username }}"
+      password: "{{ bmc_password }}"
+      output_file_name: "{{output_file}}"
+    register: inv_output
+
+  - name: Writing inventory details to {{output_file}} file
+    shell: echo {{inv_output.msg}} >> {{output_file}}
