@@ -96,14 +96,14 @@ inputs:
 
 2. get_system_firmware_inventory.yml : Playbook to fetch the system firmware inventory information
 
-3. power_state_XD670.yml: Playbook to fetch the power state information, to power on, to power off the Cray XD670 nodes.
-
 
 # Targets supported for Updates:
 
 For HPE Cray XD220v, HPE Cray XD225V and HPE Cray XD295 supported targets are:
 
 - BMC
+  
+- BMC_Master
 
 - BIOS
 
