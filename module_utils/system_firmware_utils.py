@@ -23,9 +23,9 @@ supported_models=["XD220V","XD225V","XD295V"]
 partial_models={}
 #{"HPE CRAY XD220v": "XD220"}
 supported_targets={
-    "XD220V": ["BMC_Master", "BMC", "BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC", "GPU"],
-    "XD225V": ["BMC_Master", "BMC", "BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC", "GPU"],
-    "XD295V": ["BMC_Master", "BMC", "BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC", "GPU"],
+    "XD220V": ["BMC_Master", "BMC", "BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC", "PDBPIC_BMC"],
+    "XD225V": ["BMC_Master", "BMC", "BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC", "PDBPIC_BMC"],
+    "XD295V": ["BMC_Master", "BMC", "BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC", "PDBPIC_BMC"],
 }
 # supported_targets = {
 #     "HPE CRAY XD220V": ["BMC", "BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC"],
@@ -108,13 +108,13 @@ class CrayRedfishUtils(RedfishUtils):
         payload = {"ResetType": "On"}
         target_uri = "/redfish/v1/Systems/Self/Actions/ComputerSystem.Reset"
         response1 = self.post_request(self.root_uri + target_uri, payload)
-        time.sleep(90)
+        time.sleep(120)
     
     def power_off(self):
         payload = {"ResetType": "ForceOff"}
         target_uri = "/redfish/v1/Systems/Self/Actions/ComputerSystem.Reset"
         response1 = self.post_request(self.root_uri + target_uri, payload)
-        #time.sleep(120)
+        time.sleep(120)
 
     def target_supported(self,model,target):
         try:
@@ -143,17 +143,17 @@ class CrayRedfishUtils(RedfishUtils):
         payload = {"ResetType": "ForceRestart"}
         target_uri = "/redfish/v1/Systems/Self/Actions/ComputerSystem.Reset"
         response1 = self.post_request(self.root_uri + target_uri, payload)
-        #time.sleep(180)
+        time.sleep(180)
         target_uri = "/redfish/v1/Chassis/Self/Actions/Chassis.Reset"
         response2 = self.post_request(self.root_uri + target_uri, payload)
-        #time.sleep(180)
+        time.sleep(180)
         return response1 or response2
 
     def AC_PC_ipmi(self, IP, username, password, routing_value): 
         try:
             command='ipmitool -I lanplus -H '+IP+' -U '+username+' -P '+password+' raw '+ routing_value
             subprocess.run(command, shell=True, check=True, timeout=15)
-            time.sleep(150)
+            time.sleep(180)
             self.power_on()
             return True
         except:
@@ -221,7 +221,7 @@ class CrayRedfishUtils(RedfishUtils):
             for target in all_targets:
                 entry.append("NA")
         elif partial_models[model.upper()] not in supported_models: #might be a Cray XD like XD685 which is not yet supported
-            entry.append("unsupported_model, ",partial_models)
+            entry.append("unsupported_model, ")
             for target in all_targets:
                 entry.append("NA")
         else:
@@ -261,13 +261,12 @@ class CrayRedfishUtils(RedfishUtils):
                         headers['Content-Type'] = encoder.content_type
                         response = self.post_multi_request(self.root_uri + data['MultipartHttpPushUri'],
                                                     headers=headers, payload=body)
-                        response = True
                         if response is False:
                             update_status="failed_Post"
                             after_version="NA"
                         else:
                             #add time.sleep (for BMC to comeback after flashing )
-                            time.sleep(360)
+                            time.sleep(650)
                             #call reboot logic based on target
                             update_status="success"
                             if target in reboot:
@@ -278,7 +277,7 @@ class CrayRedfishUtils(RedfishUtils):
                                         if not result:
                                             update_status="reboot_failed"
                                             break
-                                        time.sleep(300)
+                                        time.sleep(360)
                                     elif reb=="AC_PC_ipmi":
                                         result = self.AC_PC_ipmi(IP, username, password, routing[partial_models[model.upper()]]) #based on the model end routing code changes 
                                         if not result:
@@ -307,7 +306,7 @@ class CrayRedfishUtils(RedfishUtils):
                 }
         except:
             pass
-
+        
         ## have a check that atleast one image path set based out of the above new logic
         if not any(image_path_inputs.values()):
             return {'ret': False, 'changed': True, 'msg': 'Must specify atleast one update_image_path'}
@@ -343,7 +342,7 @@ class CrayRedfishUtils(RedfishUtils):
         else:
             image_path = image_path_inputs[partial_models[model.upper()]]
 
-            if not os.path.isfile(image_path):
+            if target!="PDBPIC_BMC" and not os.path.isfile(image_path):
                 update_status = "NA_fw_file_absent"
                 lis=[IP,model,"NA","NA",update_status]
                 new_data=",".join(lis)
@@ -351,30 +350,40 @@ class CrayRedfishUtils(RedfishUtils):
             else:
                 is_target_supported = self.target_supported(model,target)
 
+            if target == "PDBPIC_BMC":
+                target = attr.get('target')
+            
                 if not is_target_supported:
                     update_status="target_not_supported"
                     lis=[IP,model,"NA","NA",update_status]    
                     new_data=",".join(lis)
                     return {'ret': True,'changed': True, 'msg': str(new_data)}
                 elif target == "PDBPIC":
+                    split_image_path = image_path.split()
                     result = self.check_master_ipmi(IP,username,password)
                     if not result:
                         update_status="Please update PDBPIC from the master node"
                         lis=[IP,model,"NA","NA",update_status]    
                         new_data=",".join(lis)
                         return {'ret': True,'changed': True, 'msg': str(new_data)}
-                    bef_ver,aft_ver,update_status=self.helper_update(update_status,target,image_path,image_type,IP,username,password,model)
+                    bef_ver,aft_ver,update_status=self.helper_update(update_status,target,split_image_path[0],image_type,IP,username,password,model)
+                    if update_status.lower()!="success":
+                        return {'ret': False, 'changed': True, 'msg': f'Failed post for the server: {IP}'}
                     lis=[IP,model,bef_ver,aft_ver,update_status]
                 elif target == "BMC":
+                    split_image_path = image_path.split()
                     result = self.check_non_master_ipmi(IP,username,password)
                     if not result:
                         update_status="Please update BMC using the BMC_Master target from the master node"
                         lis=[IP,model,"NA","NA",update_status]    
                         new_data=",".join(lis)
                         return {'ret': True,'changed': True, 'msg': str(new_data)}
-                    bef_ver,aft_ver,update_status=self.helper_update(update_status,target,image_path,image_type,IP,username,password,model)
+                    bef_ver,aft_ver,update_status=self.helper_update(update_status,target,split_image_path[1],image_type,IP,username,password,model)
+                    if update_status.lower()!="success":
+                        return {'ret': False, 'changed': True, 'msg': f'Failed post for the server: {IP}'}
                     lis=[IP,model,bef_ver,aft_ver,update_status]
                 elif target == "BMC_Master":
+                    split_image_path = image_path.split()
                     result = self.check_master_ipmi(IP,username,password)
                     if not result:
                         update_status="Please update BMC using the BMC target from the Non-Master node"
@@ -382,12 +391,12 @@ class CrayRedfishUtils(RedfishUtils):
                         new_data=",".join(lis)
                         return {'ret': True,'changed': True, 'msg': str(new_data)}
                     target = "BMC"
-                    bef_ver,aft_ver,update_status=self.helper_update(update_status,target,image_path,image_type,IP,username,password,model)
+                    bef_ver,aft_ver,update_status=self.helper_update(update_status,target,split_image_path[1],image_type,IP,username,password,model)
+                    if update_status.lower()!="success":
+                        return {'ret': False, 'changed': True, 'msg': f'Failed post for the server: {IP}'}
                     lis=[IP,model,bef_ver,aft_ver,update_status]
                 else:
                     bef_ver,aft_ver,update_status=self.helper_update(update_status,target,image_path,image_type,IP,username,password,model)
                     lis=[IP,model,bef_ver,aft_ver,update_status]
                 new_data=",".join(lis)
                 return {'ret': True,'changed': True, 'msg': str(new_data)}
-
-                    
