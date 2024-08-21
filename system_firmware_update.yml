@@ -2,7 +2,7 @@
 - hosts: xds
   gather_facts: yes
   connection: local
-  name: version 1.1 System Firmware Update for HPE Cray XD225v, HPE Cray XD295v, HPE Cray XD220v model systems
+  name: version 1.0 System Firmware Update for HPE Cray XD225v, HPE Cray XD295v, HPE Cray XD220v model systems
   
   vars:
      bmc_username: "{{ inputs[inventory_hostname].user }}"
