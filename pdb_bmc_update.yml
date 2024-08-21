@@ -1,0 +1,63 @@
+---
+- hosts: xds
+  gather_facts: yes
+  connection: local
+  name: version 1.0 System Firmware Update for HPE Cray XD225v, HPE Cray XD295v, HPE Cray XD220v model systems
+  
+  vars:
+     bmc_username: "{{ inputs[inventory_hostname].user }}"
+     bmc_password: "{{ inputs[inventory_hostname].password }}"
+     baseuri: "{{ ansible_ssh_host }}"
+ 
+  tasks:    
+    - name: System Firmware Update Status result will be uploaded to the below csv file
+      set_fact: 
+        output_file: "System_FW_Update_{{ ansible_date_time.date }}_{{ ansible_date_time.time }}.csv"
+      run_once: True
+   
+    - name: Running Firmware Update for PDB on Master Nodes
+      update_system_firmware:
+        category: PDB_Update
+        command: PDBPIC
+        baseuri: "{{ baseuri }}"
+        username: "{{ bmc_username }}"
+        password: "{{ bmc_password }}"
+        target: "PDBPIC"
+        output_file_name: "{{ output_file }}"
+      register: system_fw_update_output
+
+    - name: Running Firmware Update for BMC on Non Master nodes
+      update_system_firmware:
+        category: BMC
+        command: BMC
+        baseuri: "{{ baseuri }}"
+        username: "{{ bmc_username }}"
+        password: "{{ bmc_password }}"
+        target: "BMC"
+        output_file_name: "{{ output_file }}"
+      register: system_fw_update_output
+
+    - name: Running Firmware Update for BMC on Master Nodes
+      update_system_firmware:
+        category: BMC_Master
+        command: BMC_Master
+        baseuri: "{{ baseuri }}"
+        username: "{{ bmc_username }}"
+        password: "{{ bmc_password }}"
+        target: "BMC_Master"
+        output_file_name: "{{ output_file }}"
+      register: system_fw_update_output
+
+    - name: Running Firmware Update for BMC on Master Nodes
+      update_system_firmware:
+        category: Inventory
+        command: FirmwareInventory
+        baseuri: "{{ baseuri }}"
+        username: "{{ bmc_username }}"
+        password: "{{ bmc_password }}"
+        target: "BMC_Master"
+        output_file_name: "{{ output_file }}"
+      register: system_fw_update_output
+
+    - name: Writing Firmware Inventory status details to {{output_file}} file
+      shell: echo {{system_fw_update_output.msg}} >> {{ output_file }}
