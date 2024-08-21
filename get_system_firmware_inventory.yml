@@ -1,7 +1,7 @@
 ---
 - hosts: xds
   connection: local
-  name: version 1.1 Fetches the AFUT supported Cray XD servers System Firmware Inventory Details along with Model name
+  name: version 1.0 Fetches the AFUT supported Cray XD servers System Firmware Inventory Details along with Model name
   gather_facts: yes
   vars:
     bmc_username: "{{ inputs[inventory_hostname].user }}"
