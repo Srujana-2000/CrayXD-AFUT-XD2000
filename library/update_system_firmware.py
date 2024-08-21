@@ -16,6 +16,10 @@ from ansible.module_utils.common.text.converters import to_native
 # More will be added as module features are expanded
 category_commands = {
     "Update": ["SystemFirmwareUpdate"],
+    "PDB_Update":["PDBPIC"],
+    "BMC":["BMC"],
+    "BMC_Master":["BMC_Master"],
+    "Inventory":["FirmwareInventory"],
 }
 
 def main():
@@ -30,6 +34,7 @@ def main():
             password=dict(no_log=True),
             auth_token=dict(no_log=True),
             session_uri=dict(),
+            target=dict(),
             timeout=dict(type='int', default=600),
             update_image_type = dict(type='str', default='HPM'),
             resource_id=dict(type='list',elements='str',default=[],required=False),
@@ -77,6 +82,78 @@ def main():
                 'update_image_type' : module.params['update_image_type'],
                 'output_file_name': module.params['output_file_name'],
                 })
+                if result['ret']:
+                    msg = result.get('msg', False)
+                    module.exit_json(msg=msg)
+                else:
+                    module.fail_json(msg=to_native(result))
+                    
+    if category == "PDB_Update":
+        for command in command_list:
+            if command == "PDBPIC":
+                result = rf_utils.system_fw_update({
+                'baseuri': module.params['baseuri'],
+                'username': module.params['username'],
+                'password': module.params['password'],
+                'target': module.params['target'],
+                'update_handle': module.params['update_handle'],
+                'resource_id': module.params['resource_id'],
+                'update_image_type' : module.params['update_image_type'],
+                'output_file_name': module.params['output_file_name'],
+                })
+                if result['ret']:
+                    msg = result.get('msg', False)
+                    module.exit_json(msg=msg)
+                else:
+                    module.fail_json(msg=to_native(result))
+                
+    if category == "BMC":
+        for command in command_list:
+            if command == "BMC":
+                result = rf_utils.system_fw_update({
+                'baseuri': module.params['baseuri'],
+                'username': module.params['username'],
+                'password': module.params['password'],
+                'target': module.params['target'],
+                'update_handle': module.params['update_handle'],
+                'resource_id': module.params['resource_id'],
+                'update_image_type' : module.params['update_image_type'],
+                'output_file_name': module.params['output_file_name'],
+                })
+                if result['ret']:
+                    msg = result.get('msg', False)
+                    module.exit_json(msg=msg)
+                else:
+                    module.fail_json(msg=to_native(result))
+                    
+    if category == "BMC_Master":
+        for command in command_list:
+            if command == "BMC_Master":
+                result = rf_utils.system_fw_update({
+                'baseuri': module.params['baseuri'],
+                'username': module.params['username'],
+                'password': module.params['password'],
+                'target': module.params['target'],
+                'update_handle': module.params['update_handle'],
+                'resource_id': module.params['resource_id'],
+                'update_image_type' : module.params['update_image_type'],
+                'output_file_name': module.params['output_file_name'],
+                })
+                if result['ret']:
+                    msg = result.get('msg', False)
+                    module.exit_json(msg=msg)
+                else:
+                    module.fail_json(msg=to_native(result))
+                    
+    if category == "Inventory":
+        for command in command_list:
+            if command == "FirmwareInventory":
+                result = rf_utils.get_sys_fw_inventory({
+                      'baseuri': module.params['baseuri'],
+                      'username': module.params['username'],
+                      'password': module.params['password'],
+                      'output_file_name': module.params['output_file_name'],
+                      })
                 if result['ret']:
                     msg = result.get('msg', False)
                     module.exit_json(msg=msg)
