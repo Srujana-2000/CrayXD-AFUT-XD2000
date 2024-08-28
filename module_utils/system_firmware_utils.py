@@ -162,18 +162,18 @@ class CrayRedfishUtils(RedfishUtils):
     def check_master_ipmi(self, IP, username, password): 
         try:
             command='ipmitool -I lanplus -H '+IP+' -U '+username+' -P '+password+' raw '+' 0x34 '+' 0xa4 '
-            response = subprocess.run(command, shell=True, capture_output=True)
+            response = subprocess.run(command, shell=True, stdout=subprocess.PIPE,universal_newlines=True)
             response_check = response.stdout
-            byte = response_check.decode('utf-8')
-            split = byte.split()
+            split = response_check.split()
             node = split[1]
             command='ipmitool -I lanplus -H '+IP+' -U '+username+' -P '+password+' raw '+' 0x34 '+' 0xA6 '+node
-            response = subprocess.run(command, shell=True, capture_output=True)
-            output = response.stdout
-            byte = output.decode('utf-8')
-            split = byte.split()
+            response = subprocess.run(command, shell=True, stdout=subprocess.PIPE,universal_newlines=True)
+            response_check = response.stdout
+            split = response_check.split()
             master_key = split[0]
-            if master_key.startswith("f"):
+            byte_0_int = int(master_key,16)
+            byte_0_bin = format(byte_0_int, '08b')
+            if byte_0_bin[2]=="1":
                 self.power_on()
                 return True
             else:
@@ -184,20 +184,18 @@ class CrayRedfishUtils(RedfishUtils):
     def check_non_master_ipmi(self, IP, username, password): 
         try:
             command='ipmitool -I lanplus -H '+IP+' -U '+username+' -P '+password+' raw '+' 0x34 '+' 0xa4 '
-            response = subprocess.run(command, shell=True, capture_output=True)
+            response = subprocess.run(command, shell=True, stdout=subprocess.PIPE,universal_newlines=True)
             response_check = response.stdout
-            byte = response_check.decode('utf-8')
-            split = byte.split()
+            split = response_check.split()
             node = split[1]
-            ip_list = []
-            ip_parts = []
             command='ipmitool -I lanplus -H '+IP+' -U '+username+' -P '+password+' raw '+' 0x34 '+' 0xa6 '+node
-            response = subprocess.run(command, shell=True, capture_output=True)
+            response = subprocess.run(command,shell=True, stdout=subprocess.PIPE,universal_newlines=True)
             response_check = response.stdout
-            byte = response_check.decode('utf-8')
-            split = byte.split()
+            split = response_check.split()
             master_key = split[0]
-            if not master_key.startswith("f"):
+            byte_0_int = int(master_key,16)
+            byte_0_bin = format(byte_0_int, '08b')
+            if byte_0_bin[2]!="1":
                 return True
             else:
                 return False
