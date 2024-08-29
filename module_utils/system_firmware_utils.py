@@ -348,8 +348,8 @@ class CrayRedfishUtils(RedfishUtils):
             else:
                 is_target_supported = self.target_supported(model,target)
 
-            if target == "PDBPIC_BMC":
-                target = attr.get('target')
+                if target == "PDBPIC_BMC":
+                    target = attr.get('target')
             
                 if not is_target_supported:
                     update_status="target_not_supported"
