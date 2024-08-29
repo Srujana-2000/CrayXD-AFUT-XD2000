@@ -23,9 +23,9 @@ supported_models=["XD220V","XD225V","XD295V"]
 partial_models={}
 #{"HPE CRAY XD220v": "XD220"}
 supported_targets={
-    "XD220V": ["BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC_BMC"],
-    "XD225V": ["BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC_BMC"],
-    "XD295V": ["BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC_BMC"],
+    "XD220V": ["BMC_Master", "BMC", "BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC", "PDBPIC_BMC"],
+    "XD225V": ["BMC_Master", "BMC", "BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC", "PDBPIC_BMC"],
+    "XD295V": ["BMC_Master", "BMC", "BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC", "PDBPIC_BMC"],
 }
 
 all_targets = ['BMC', 'BIOS', 'MainCPLD', 'PDBPIC', 'HDDBPPIC']
@@ -296,6 +296,8 @@ class CrayRedfishUtils(RedfishUtils):
         except:
             pass
         
+        if target=="BMC" or target=="PDBPIC":
+            return {'ret': False, 'changed': True, 'msg': 'Must update BMC and PDB together using pdb_bmc_update.yml'}
         ## have a check that atleast one image path set based out of the above new logic
         if not any(image_path_inputs.values()):
             return {'ret': False, 'changed': True, 'msg': 'Must specify atleast one update_image_path'}
