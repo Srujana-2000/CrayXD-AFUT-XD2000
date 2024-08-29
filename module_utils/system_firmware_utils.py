@@ -23,19 +23,10 @@ supported_models=["XD220V","XD225V","XD295V"]
 partial_models={}
 #{"HPE CRAY XD220v": "XD220"}
 supported_targets={
-    "XD220V": ["BMC_Master", "BMC", "BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC", "PDBPIC_BMC"],
-    "XD225V": ["BMC_Master", "BMC", "BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC", "PDBPIC_BMC"],
-    "XD295V": ["BMC_Master", "BMC", "BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC", "PDBPIC_BMC"],
+    "XD220V": ["BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC_BMC"],
+    "XD225V": ["BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC_BMC"],
+    "XD295V": ["BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC_BMC"],
 }
-# supported_targets = {
-#     "HPE CRAY XD220V": ["BMC", "BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC"],
-#     "HPE CRAY SC XD220V": ["BMC", "BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC"],
-#     "HPE CRAY XD225V": ["BMC", "BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC"],
-#     "HPE CRAY SC XD225V": ["BMC", "BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC"],
-#     "HPE CRAY XD295V": ["BMC", "BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC"],
-#     "HPE CRAY SC XD295V": ["BMC", "BIOS", "MainCPLD", "HDDBPPIC", "PDBPIC"],
-# }
-
 
 all_targets = ['BMC', 'BIOS', 'MainCPLD', 'PDBPIC', 'HDDBPPIC']
  
@@ -348,9 +339,8 @@ class CrayRedfishUtils(RedfishUtils):
             else:
                 is_target_supported = self.target_supported(model,target)
 
-            if target == "PDBPIC_BMC":
-                target = attr.get('target')
-            
+                if target == "PDBPIC_BMC":
+                    target = attr.get('target')
                 if not is_target_supported:
                     update_status="target_not_supported"
                     lis=[IP,model,"NA","NA",update_status]    
@@ -364,7 +354,7 @@ class CrayRedfishUtils(RedfishUtils):
                         lis=[IP,model,"NA","NA",update_status]    
                         new_data=",".join(lis)
                         return {'ret': True,'changed': True, 'msg': str(new_data)}
-                    bef_ver,aft_ver,update_status=self.helper_update(update_status,target,split_image_path[0],image_type,IP,username,password,model)
+                    bef_ver,aft_ver,update_status=self.helper_update(update_status,"PDBPIC",split_image_path[0],image_type,IP,username,password,model)
                     if update_status.lower()!="success":
                         return {'ret': False, 'changed': True, 'msg': f'Failed post for the server: {IP}'}
                     lis=[IP,model,bef_ver,aft_ver,update_status]
@@ -376,7 +366,7 @@ class CrayRedfishUtils(RedfishUtils):
                         lis=[IP,model,"NA","NA",update_status]    
                         new_data=",".join(lis)
                         return {'ret': True,'changed': True, 'msg': str(new_data)}
-                    bef_ver,aft_ver,update_status=self.helper_update(update_status,target,split_image_path[1],image_type,IP,username,password,model)
+                    bef_ver,aft_ver,update_status=self.helper_update(update_status,"BMC",split_image_path[1],image_type,IP,username,password,model)
                     if update_status.lower()!="success":
                         return {'ret': False, 'changed': True, 'msg': f'Failed post for the server: {IP}'}
                     lis=[IP,model,bef_ver,aft_ver,update_status]
@@ -388,8 +378,7 @@ class CrayRedfishUtils(RedfishUtils):
                         lis=[IP,model,"NA","NA",update_status]    
                         new_data=",".join(lis)
                         return {'ret': True,'changed': True, 'msg': str(new_data)}
-                    target = "BMC"
-                    bef_ver,aft_ver,update_status=self.helper_update(update_status,target,split_image_path[1],image_type,IP,username,password,model)
+                    bef_ver,aft_ver,update_status=self.helper_update(update_status,"BMC",split_image_path[1],image_type,IP,username,password,model)
                     if update_status.lower()!="success":
                         return {'ret': False, 'changed': True, 'msg': f'Failed post for the server: {IP}'}
                     lis=[IP,model,bef_ver,aft_ver,update_status]
