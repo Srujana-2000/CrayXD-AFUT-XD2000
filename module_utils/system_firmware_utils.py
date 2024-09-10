@@ -316,7 +316,10 @@ class CrayRedfishUtils(RedfishUtils):
 
         if not os.path.exists(csv_file_name):
             f = open(csv_file_name, "w")
-            to_write="IP_Address,Model,"+target+'_Pre_Ver,'+target+'_Post_Ver,'+"Update_Status\n"
+            if target == "PDBPIC_BMC":
+                to_write="IP_Address,Model,BMC,BIOS,MainCPLD,PDBPIC,HDDBPPIC\n"
+            else:
+                to_write="IP_Address,Model,"+target+'_Pre_Ver,'+target+'_Post_Ver,'+"Update_Status\n"
             f.write(to_write)
             f.close() 
 
