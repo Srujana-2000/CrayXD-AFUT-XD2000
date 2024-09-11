@@ -48,7 +48,7 @@
         output_file_name: "{{ output_file }}"
       register: system_fw_update_output
 
-    - name: Running Firmware Update for BMC on Master Nodes
+    - name: Running Firmware Inventory for the update
       update_system_firmware:
         category: Inventory
         command: FirmwareInventory
