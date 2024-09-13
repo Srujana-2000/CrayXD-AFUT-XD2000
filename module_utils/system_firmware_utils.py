@@ -135,10 +135,10 @@ class CrayRedfishUtils(RedfishUtils):
         target_uri = "/redfish/v1/Systems/Self/Actions/ComputerSystem.Reset"
         response1 = self.post_request(self.root_uri + target_uri, payload)
         time.sleep(180)
-        target_uri = "/redfish/v1/Chassis/Self/Actions/Chassis.Reset"
-        response2 = self.post_request(self.root_uri + target_uri, payload)
-        time.sleep(180)
-        return response1 or response2
+        #target_uri = "/redfish/v1/Chassis/Self/Actions/Chassis.Reset"
+        #response2 = self.post_request(self.root_uri + target_uri, payload)
+        #time.sleep(180)
+        return response1
 
     def AC_PC_ipmi(self, IP, username, password, routing_value): 
         try:
@@ -255,7 +255,10 @@ class CrayRedfishUtils(RedfishUtils):
                             after_version="NA"
                         else:
                             #add time.sleep (for BMC to comeback after flashing )
-                            time.sleep(650)
+                            if target == "BIOS" or target == "BIOS2":
+                                time.sleep(250)
+                            else:
+                                time.sleep(650)
                             #call reboot logic based on target
                             update_status="success"
                             if target in reboot:
@@ -266,7 +269,7 @@ class CrayRedfishUtils(RedfishUtils):
                                         if not result:
                                             update_status="reboot_failed"
                                             break
-                                        time.sleep(360)
+                                        time.sleep(600)
                                     elif reb=="AC_PC_ipmi":
                                         result = self.AC_PC_ipmi(IP, username, password, routing[partial_models[model.upper()]]) #based on the model end routing code changes 
                                         if not result:
