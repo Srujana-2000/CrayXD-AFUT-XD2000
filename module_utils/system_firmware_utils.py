@@ -256,7 +256,7 @@ class CrayRedfishUtils(RedfishUtils):
                         else:
                             #add time.sleep (for BMC to comeback after flashing )
                             if target == "BIOS" or target == "BIOS2":
-                                time.sleep(250)
+                                time.sleep(300)
                             else:
                                 time.sleep(650)
                             #call reboot logic based on target
