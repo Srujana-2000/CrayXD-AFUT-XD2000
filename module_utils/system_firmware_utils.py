@@ -321,6 +321,8 @@ class CrayRedfishUtils(RedfishUtils):
             f = open(csv_file_name, "w")
             if target == "PDBPIC_BMC":
                 to_write="IP_Address,Model,BMC,BIOS,MainCPLD,PDBPIC,HDDBPPIC\n"
+            elif target == "BIOS":
+                to_write = "IP_Address,Model," + target + '_Pre_Ver,' + target + '_Post_Ver,' + "Update_Status,remarks\n"
             else:
                 to_write="IP_Address,Model,"+target+'_Pre_Ver,'+target+'_Post_Ver,'+"Update_Status\n"
             f.write(to_write)
@@ -392,6 +394,10 @@ class CrayRedfishUtils(RedfishUtils):
                     lis=[IP,model,bef_ver,aft_ver,update_status]
                 else:
                     bef_ver,aft_ver,update_status=self.helper_update(update_status,target,image_path,image_type,IP,username,password,model)
-                    lis=[IP,model,bef_ver,aft_ver,update_status]
+                    if target == "BIOS":
+                        remarks = "If the update is success and version is not reflected, kindly do a physical plug out and plug in to get the reflected version"
+                        lis=[IP,model,bef_ver,aft_ver,update_status,remarks]
+                    else:
+                        lis=[IP,model,bef_ver,aft_ver,update_status]
                 new_data=",".join(lis)
                 return {'ret': True,'changed': True, 'msg': str(new_data)}
